@@ -68,7 +68,8 @@ async def send_message(request: Message):
     message = request.message
     try:
         response = query_bedrock_knowledge_base(message)
-        return {"message": response}
+        response_final = remove_empty_strings(response)
+        return {"message": response_final}
     except Exception as e:
         print(f"Error querying Bedrock: {str(e)}")
         raise HTTPException(status_code=500, detail="Error processing your request")
@@ -102,6 +103,8 @@ def query_bedrock_knowledge_base(query: str):
         print(f"Error invoking Bedrock knowledge base: {e}")
         raise
 
+def remove_empty_strings(input_list):
+    return list(set(item for item in input_list if item))
 
 if __name__ == '__main__':
     uvicorn.run("server:app", port=8000, reload=True)
