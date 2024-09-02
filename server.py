@@ -58,7 +58,7 @@ async def send_message(request: CreateQuestionsRAG):
     prompt = f""" Write me the questions you would like to ask the candidates for the following job description: {jobDescription}. The skills required are : {skills}. The job title is {jobTitle}. Give me {funQuestions} questions to ask the candidates. Just return me the questions with nothing else and no other text. """
     try:
         response = query_bedrock_knowledge_base(prompt)
-        return {"message": response}
+        return {"response": response}
     except Exception as e:
         print(f"Error querying Bedrock: {str(e)}")
         raise HTTPException(status_code=500, detail="Error processing your request")
@@ -92,9 +92,7 @@ def query_bedrock_knowledge_base(query: str):
             output_text = response_data['results'][0].get('outputText')
             if output_text:
                 output_list = output_text.split('\n')
-                print(output_list)
-                print(output_text)
-                return output_text
+                return output_list
             else:
                 raise ValueError('No text in the response')
         else:
