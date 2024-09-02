@@ -37,7 +37,9 @@ class CreateQuestionsRAG(BaseModel):
     jobDescription: str
     skills: str
     jobTitle: str
-    funQuestions: int
+    functionalQuestions: int
+    situationalQuestion: int
+    behavioralQuestion: int
 
 class Message(BaseModel):
     message: str
@@ -52,10 +54,15 @@ async def send_message(request: CreateQuestionsRAG):
 
     jobDescription = request.jobDescription
     skills = request.skills
-    funQuestions = request.funQuestions
     jobTitle = request.jobTitle
+    functionalQuestions = request.functionalQuestions
+    situationalQuestion = request.situationalQuestion
+    behavioralQuestion = request.behavioralQuestion
+    
 
-    prompt = f""" Write me the questions you would like to ask the candidates for the following job description: {jobDescription}. The skills required are : {skills}. The job title is {jobTitle}. Give me {funQuestions} questions to ask the candidates. Just return me the questions with nothing else and no other text. """
+    prompt = f""" Write me the questions you would like to ask the candidates for the following job description: {jobDescription}. The skills required are : {skills}. The job title is {jobTitle}. Give me {functionalQuestions} functional questions, {situationalQuestion} situational questions and {behavioralQuestion} behavioral questions to ask the candidates, so the total no. of questions should be {functionalQuestions+situationalQuestion+behavioralQuestion}. Just return me the questions with nothing else and no other text. Just return me the questions. Your response should be in the following format:
+    question 1\nquestion2\nquestion3\n.....
+    """
     try:
         response = query_bedrock_knowledge_base(prompt)
         return {"response": response}
@@ -98,7 +105,6 @@ def query_bedrock_knowledge_base(query: str):
                 raise ValueError('No text in the response')
         else:
             raise ValueError('No results found in the response')
-        
     except ClientError as e:
         print(f"Error invoking Bedrock knowledge base: {e}")
         raise
