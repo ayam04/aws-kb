@@ -65,7 +65,8 @@ async def send_message(request: CreateQuestionsRAG):
     """
     try:
         response = query_bedrock_knowledge_base(prompt)
-        return {"response": response}
+        response_final = remove_empty_strings(response)
+        return {"message": response_final}
     except Exception as e:
         print(f"Error querying Bedrock: {str(e)}")
         raise HTTPException(status_code=500, detail="Error processing your request")
