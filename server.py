@@ -33,6 +33,12 @@ bedrock = boto3.client('bedrock-runtime',
 KNOWLEDGE_BASE_ID = "EY0ZGLB9OT"
 MODEL_ARN = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-premier-v1:0"
 
+class CreateQuestionsRAG(BaseModel):
+    jobDescription: str
+    skills: str
+    jobTitle: str
+    funQuestions: int
+
 class Message(BaseModel):
     message: str
 
@@ -41,10 +47,27 @@ async def home():
     with open("static/chat.html", "r") as f:
         return f.read()
 
-@app.post("/send_message")
-async def send_message(message: Message):
+@app.post("/generate-rag-questions")
+async def send_message(request: CreateQuestionsRAG):
+
+    jobDescription = request.jobDescription
+    skills = request.skills
+    funQuestions = request.funQuestions
+    jobTitle = request.jobTitle
+
+    prompt = f""" Write me the questions you would like to ask the candidates for the following job description: {jobDescription}. The skills required are : {skills}. The job title is {jobTitle}. Give me {funQuestions} questions to ask the candidates. Just return me the questions with nothing else and no other text. """
     try:
-        response = query_bedrock_knowledge_base(message.message)
+        response = query_bedrock_knowledge_base(prompt)
+        return {"message": response}
+    except Exception as e:
+        print(f"Error querying Bedrock: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error processing your request")
+
+@app.post("/send-message")
+async def send_message(request: Message):
+    message = request.message
+    try:
+        response = query_bedrock_knowledge_base(message)
         return {"message": response}
     except Exception as e:
         print(f"Error querying Bedrock: {str(e)}")
@@ -68,6 +91,9 @@ def query_bedrock_knowledge_base(query: str):
         if 'results' in response_data and len(response_data['results']) > 0:
             output_text = response_data['results'][0].get('outputText')
             if output_text:
+                output_list = output_text.split('\n')
+                print(output_list)
+                print(output_text)
                 return output_text
             else:
                 raise ValueError('No text in the response')
