@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: #b9b9b9;
             color: #333;
             margin: 0;
             padding: 0;
@@ -108,12 +109,39 @@
             flex-direction: row;
         }
 
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #spinner {
+            display: none;
+            text-align: center;
+        }
+
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>AWS Bedrock Knowledge Base Chat</h1>
         <div id="chat-container" class="chat-container"></div>
+        <div id="spinner" class="spinner"></div>
         <div class="message-container">
             <input type="text" id="user-input" placeholder="Type your message here...">
             <button id="send-button">Send</button>
@@ -124,6 +152,7 @@
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+        const spinner = document.getElementById('spinner');
 
         function addMessage(role, content) {
             const messageElement = document.createElement('div');
@@ -140,6 +169,7 @@
             addMessage('You', message);
             userInput.value = '';
             sendButton.disabled = true;
+            spinner.style.display = 'block';
 
             try {
                 const response = await axios.post('http://127.0.0.1:8000/send-message', { message });
@@ -149,6 +179,7 @@
                 addMessage('Assistant', 'Sorry, there was an error processing your request.');
             } finally {
                 sendButton.disabled = false;
+                spinner.style.display = 'none';
             }
         }
 
@@ -158,4 +189,5 @@
         });
     </script>
 </body>
+
 </html>
