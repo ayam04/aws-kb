@@ -59,10 +59,10 @@ async def send_message(request: CreateQuestionsRAG):
     situationalQuestion = request.situationalQuestion
     behavioralQuestion = request.behavioralQuestion
     
-
     prompt = f""" Write me the questions you would like to ask the candidates for the following job description: {jobDescription}. The skills required are : {skills}. The job title is {jobTitle}. Give me {functionalQuestions} functional questions, {situationalQuestion} situational questions and {behavioralQuestion} behavioral questions to ask the candidates, so the total no. of questions should be {functionalQuestions+situationalQuestion+behavioralQuestion}. Just return me the questions with nothing else and no other text. Just return me the questions. Your response should be in the following format:
     question 1\nquestion2\nquestion3\n.....
     """
+    
     try:
         response = query_bedrock_knowledge_base(prompt)
         response_final = remove_empty_strings(response)
@@ -74,8 +74,11 @@ async def send_message(request: CreateQuestionsRAG):
 @app.post("/send-message")
 async def send_message(request: Message):
     message = request.message
+
+    prompt = f"RETURN ME A SINGLE LINE JSON for the response to this query: {message} add proper keys and values based on the query and make it consistent. The format of the JSON should be: {{'key1': 'value1', 'key2': 'value2', 'key3': 'value3'}}"
     try:
         response = query_bedrock_knowledge_base(message)
+        # print(response)
         response_final = remove_empty_strings(response)
         return {"message": response_final}
     except Exception as e:
