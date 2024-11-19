@@ -36,7 +36,7 @@
         }
 
         #chat-container {
-            height: 400px;
+            height: 600px;
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -73,11 +73,6 @@
             background-color: #0056b3;
         }
 
-        p {
-            margin: 0;
-            padding: 5px 0;
-        }
-
         .message {
             margin: 10px 0;
             padding: 10px;
@@ -97,16 +92,6 @@
 
         .message strong {
             color: #007bff;
-        }
-
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message-container {
-            display: flex;
-            flex-direction: row;
         }
 
         .spinner {
@@ -134,13 +119,21 @@
             text-align: center;
         }
 
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>Job QnA Automation with AWS Bedrock</h1>
-        <div id="chat-container" class="chat-container"></div>
+        <div id="chat-container"></div>
         <div id="spinner" class="spinner"></div>
         <div class="message-container">
             <input type="text" id="user-input" placeholder="Type your message here...">
@@ -154,10 +147,30 @@
         const sendButton = document.getElementById('send-button');
         const spinner = document.getElementById('spinner');
 
-        function addMessage(role, content) {
+        function addMessage(role, content, isList = false) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', role.toLowerCase());
-            messageElement.innerHTML = `<strong>${role}:</strong> ${content}`;
+            if (isList) {
+                const list = document.createElement('ul');
+                content.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = item;
+                    list.appendChild(listItem);
+                });
+                messageElement.innerHTML = `<strong>${role}:</strong>`;
+                messageElement.appendChild(list);
+            } else if (typeof content === 'object') {
+                const list = document.createElement('ul');
+                Object.entries(content).forEach(([key, value]) => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+                    list.appendChild(listItem);
+                });
+                messageElement.innerHTML = `<strong>${role}:</strong>`;
+                messageElement.appendChild(list);
+            } else {
+                messageElement.innerHTML = `<strong>${role}:</strong> ${content}`;
+            }
             chatContainer.appendChild(messageElement);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -173,7 +186,15 @@
 
             try {
                 const response = await axios.post('http://127.0.0.1:8000/send-message', { message });
-                addMessage('Assistant', response.data.message);
+                const data = response.data;
+
+                if (Array.isArray(data)) {
+                    addMessage('Assistant', data, true);
+                } else if (typeof data === 'object') {
+                    addMessage('Assistant', data);
+                } else {
+                    addMessage('Assistant', data);
+                }
             } catch (error) {
                 console.error('Error:', error);
                 addMessage('Assistant', 'Sorry, there was an error processing your request.');
