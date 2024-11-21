@@ -151,7 +151,6 @@ def extract_number_from_query(query: str) -> int:
     return None
 
 def extract_subject_area(query: str) -> str:
-    """Extract the subject area from the query."""
     query = query.lower()
     query = query.replace("give me", "")
     query = query.replace("with answers", "")
